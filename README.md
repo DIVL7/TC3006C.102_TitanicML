@@ -108,5 +108,3 @@ streamlit run dashboard/streamlit_app.py
 ## 📜 Licencia
 
 Este proyecto está bajo licencia MIT. Ver [LICENSE](LICENSE).
-
-````
