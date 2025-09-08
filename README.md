@@ -110,7 +110,3 @@ streamlit run dashboard/streamlit_app.py
 Este proyecto está bajo licencia MIT. Ver [LICENSE](LICENSE).
 
 ````
-
----
-
-# `data/README.md` (diccionario de datos)
