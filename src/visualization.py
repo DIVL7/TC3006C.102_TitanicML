@@ -190,3 +190,69 @@ def plot_importances_comparison(df_long: pd.DataFrame, name: str, title: str, ca
     fig.suptitle(title)
     fig.tight_layout()
     return _save(fig, name, caption)
+
+# Fairness plots
+
+def plot_fairness_bars(df: pd.DataFrame, name: str, title: str, caption: str):
+    """
+    Barras agrupadas por 'Grupo' para TPR, FPR, Precision y Dem.Par.
+    Espera columnas: ['Grupo','TPR','FPR','Precision','Dem.Par.'].
+    Devuelve la ruta a la imagen guardada.
+    """
+    metrics = ["TPR", "FPR", "Precision", "Dem.Par."]
+    groups = df["Grupo"].astype(str).tolist()
+
+    fig, axes = plt.subplots(1, len(metrics), figsize=(4.8*len(metrics), 6), sharey=False)
+    if len(metrics) == 1:
+        axes = [axes]
+
+    for ax, m in zip(axes, metrics):
+        vals = df[m].values.astype(float)
+        ax.bar(groups, vals, color=CB_PALETTE[0])
+        ax.set_title(m)
+        ax.set_xticklabels(groups, rotation=45, ha="right")
+        ax.set_ylim(0, 1)
+        ax.grid(axis="y", alpha=0.2, linestyle=":")
+
+    fig.suptitle(title)
+    fig.tight_layout()
+    return _save(fig, name, caption)
+
+def plot_fairness_disparity(df: pd.DataFrame, metric: str, reference: str, name: str, title: str, caption: str):
+    """
+    Diferencia vs grupo de referencia: df[metric] - df_ref[metric].
+    df debe tener columnas: ['Grupo', metric]
+    """
+    df = df.copy()
+    ref_row = df.loc[df["Grupo"] == reference]
+    if ref_row.empty:
+        raise ValueError(f"Grupo de referencia '{reference}' no encontrado en df['Grupo'].")
+    ref_val = float(ref_row.iloc[0][metric])
+
+    df["Δ"] = df[metric].astype(float) - ref_val
+    fig, ax = plt.subplots(figsize=(7.5, 5.5))
+    ax.barh(df["Grupo"].astype(str), df["Δ"].values, color=CB_PALETTE[1])
+    ax.axvline(0, color="gray", linestyle="--", linewidth=1)
+    ax.set_xlabel(f"Diferencia en {metric} vs '{reference}'")
+    ax.set_title(title)
+    ax.grid(axis="x", alpha=0.2, linestyle=":")
+    fig.tight_layout()
+    return _save(fig, name, caption)
+
+def plot_group_threshold_tradeoff(df_thr: pd.DataFrame, metric: str, name: str, title: str, caption: str):
+    """
+    Curvas de {metric} vs threshold por grupo.
+    Espera columnas: ['Grupo','threshold', metric]
+    """
+    fig, ax = plt.subplots(figsize=(7.5, 5.5))
+    for g, sub in df_thr.groupby("Grupo"):
+        sub = sub.sort_values("threshold")
+        ax.plot(sub["threshold"].values, sub[metric].astype(float).values, label=str(g), linewidth=2)
+    ax.set_xlabel("Threshold")
+    ax.set_ylabel(metric)
+    ax.set_ylim(0, 1)
+    ax.set_title(title)
+    ax.legend(loc="best", frameon=False)
+    ax.grid(alpha=0.2, linestyle=":")
+    fig.tight_layout()
+    return _save(fig, name, caption)

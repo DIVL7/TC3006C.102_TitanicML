@@ -23,7 +23,7 @@ build/
 .vscode/
 .idea/
 
-# Datos y artefactos (dejamos el CSV crudo si es pequeño)
+# Datos y artefactos
 data/processed/
 results/figures/
 results/tables/

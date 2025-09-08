@@ -315,3 +315,101 @@ def feature_names_from_fitted_preproc(preproc, df_sample: pd.DataFrame, fare_col
 
     # El orden de salida del ColumnTransformer es por defecto el orden declarado: num luego cat
     return num_names + cat_names
+
+# Fairness helpers
+import numpy as np
+import pandas as pd
+from sklearn.metrics import confusion_matrix
+
+def _rates_from_confusion(cm: np.ndarray) -> dict:
+    tn, fp, fn, tp = cm.ravel()
+    tpr = tp / (tp + fn + 1e-12)          # True Positive Rate (recall de la clase positiva)
+    fpr = fp / (fp + tn + 1e-12)          # False Positive Rate
+    precision = tp / (tp + fp + 1e-12)    # Precisión
+    return {"TPR": float(tpr), "FPR": float(fpr), "Precision": float(precision)}
+
+def group_metrics_df(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    y_prob: np.ndarray,
+    group: pd.Series,
+    group_name: str,
+    positive_label: int = 1,
+) -> pd.DataFrame:
+    """
+    Métricas por grupo:
+    - TPR (recall positivo), FPR, Precision
+    - Dem.Par. = P(ŷ=1 | grupo)  (paridad demográfica)
+    """
+    rows = []
+    gser = pd.Series(group)
+    for gval in gser.dropna().unique():
+        idx = (gser == gval).values
+        yt, yp = y_true[idx], y_pred[idx]
+        cm = confusion_matrix(yt, yp, labels=[0, 1])
+        rates = _rates_from_confusion(cm)
+        dem_par = float(np.mean(yp == positive_label))
+        rows.append({
+            "Atributo": group_name,
+            "Grupo": str(gval),
+            "TPR": rates["TPR"],
+            "FPR": rates["FPR"],
+            "Precision": rates["Precision"],
+            "Dem.Par.": dem_par,
+            "N": int(idx.sum()),
+        })
+    return pd.DataFrame(rows)
+
+def group_metrics_intersection_df(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    y_prob: np.ndarray,
+    group_a: pd.Series,
+    name_a: str,
+    group_b: pd.Series,
+    name_b: str,
+) -> pd.DataFrame:
+    """Métricas por intersección A×B (p.ej., Sex×Pclass)."""
+    rows = []
+    ga, gb = pd.Series(group_a), pd.Series(group_b)
+    for a in ga.dropna().unique():
+        for b in gb.dropna().unique():
+            mask = (ga == a).values & (gb == b).values
+            if mask.sum() == 0:
+                continue
+            yt, yp = y_true[mask], y_pred[mask]
+            cm = confusion_matrix(yt, yp, labels=[0, 1])
+            rates = _rates_from_confusion(cm)
+            dem_par = float(np.mean(yp == 1))
+            rows.append({
+                "Atributo": f"{name_a}×{name_b}",
+                "Grupo": f"{name_a}={a} & {name_b}={b}",
+                "TPR": rates["TPR"],
+                "FPR": rates["FPR"],
+                "Precision": rates["Precision"],
+                "Dem.Par.": dem_par,
+                "N": int(mask.sum()),
+            })
+    return pd.DataFrame(rows)
+
+def sweep_group_thresholds(y_true: np.ndarray, y_prob: np.ndarray, group: pd.Series, n: int = 101) -> pd.DataFrame:
+    """
+    Barrido de umbrales por grupo: devuelve TPR/FPR/Precision/Dem.Par. por threshold.
+    """
+    thrs = np.linspace(0, 1, n)
+    out = []
+    gser = pd.Series(group)
+    for g in gser.dropna().unique():
+        mask = (gser == g).values
+        yt_g, ys_g = y_true[mask], y_prob[mask]
+        for t in thrs:
+            yp_g = (ys_g >= t).astype(int)
+            cm = confusion_matrix(yt_g, yp_g, labels=[0, 1])
+            rates = _rates_from_confusion(cm)
+            dem_par = float(np.mean(yp_g == 1))
+            out.append({
+                "Grupo": str(g), "threshold": float(t),
+                "TPR": rates["TPR"], "FPR": rates["FPR"], "Precision": rates["Precision"],
+                "Dem.Par.": dem_par, "N": int(mask.sum()),
+            })
+    return pd.DataFrame(out)
