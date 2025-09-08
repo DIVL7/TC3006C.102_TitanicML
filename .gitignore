@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.env
+.venv
+venv/
+.envrc
+pip-wheel-metadata/
+*.egg-info/
+dist/
+build/
+
+# Notebooks
+.ipynb_checkpoints/
+.notebooks_cache/
+
+# IDE/OS
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Datos y artefactos (dejamos el CSV crudo si es pequeño)
+data/processed/
+results/figures/
+results/tables/
+results/metrics.json
+models/*.pkl
+models/*.joblib
+dashboard/__pycache__/
+
+# Cachés varias
+.joblib_cache/

@@ -1,0 +1,13 @@
+{
+  "model_artifact": "C:\\Users\\luigu\\OneDrive\\Escritorio\\Titanic_MLProject\\models\\best_model.pkl",
+  "model_name": "LogisticRegression_base",
+  "threshold": 0.525,
+  "training_data": {
+    "samples": 891,
+    "features": 31
+  },
+  "metrics_reference": {
+    "selection_basis": "F1-máx en test (equilibrio)",
+    "expected_behavior": "Equilibrio precision/recall; buena especificidad"
+  }
+}
