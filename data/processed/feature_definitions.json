@@ -1,0 +1,52 @@
+{
+  "Title": {
+    "description": "Título extraído del nombre",
+    "type": "categorical",
+    "creation_method": "regex extraction (agrupado en {Mr, Mrs, Miss, Master, Officer, Royalty})",
+    "missing_handling": "none",
+    "values": [
+      "Mr",
+      "Mrs",
+      "Miss",
+      "Master",
+      "Officer",
+      "Royalty"
+    ]
+  },
+  "FamilySize": {
+    "description": "Tamaño de familia = SibSp + Parch + 1",
+    "type": "numeric",
+    "creation_method": "sum",
+    "missing_handling": "fillna(0) en SibSp/Parch antes de sumar"
+  },
+  "IsAlone": {
+    "description": "Indicador de viajar solo (FamilySize <= 1)",
+    "type": "binary",
+    "creation_method": "threshold on FamilySize",
+    "missing_handling": "derivado de FamilySize"
+  },
+  "FarePerPerson": {
+    "description": "Tarifa por persona ~ Fare / FamilySize",
+    "type": "numeric",
+    "creation_method": "division",
+    "missing_handling": "FamilySize==0 -> 1"
+  },
+  "Fare_log": {
+    "description": "Transformación logarítmica de Fare",
+    "type": "numeric",
+    "creation_method": "log1p (natural) aplicado después de imputación",
+    "missing_handling": "median imputation previa"
+  },
+  "HasCabin": {
+    "description": "Indicador de tener número de cabina conocido",
+    "type": "binary",
+    "creation_method": "notnull(Cabin)",
+    "missing_handling": "none"
+  },
+  "Age_bin": {
+    "description": "Bines de edad",
+    "type": "categorical_ordered",
+    "creation_method": "pd.cut en [0,12,18,30,45,60,80] con etiquetas ['0-11','12-17','18-29','30-44','45-59','60-79']",
+    "missing_handling": "depende de imputación de Age previa si se aplica en modelado"
+  }
+}

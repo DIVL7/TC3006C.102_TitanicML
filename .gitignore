@@ -1,36 +1,62 @@
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-*.so
-.env
-.venv
-venv/
-.envrc
-pip-wheel-metadata/
-*.egg-info/
-dist/
-build/
-
-# Notebooks
-.ipynb_checkpoints/
-.notebooks_cache/
-
-# IDE/OS
+# ===== SO / editores =====
 .DS_Store
-*.swp
+Thumbs.db
 .vscode/
 .idea/
 
-# Datos y artefactos
-data/processed/
-results/figures/
-results/tables/
-results/metrics.json
-models/*.pkl
-models/*.joblib
-dashboard/__pycache__/
+# ===== Python / build =====
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.dll
+*.dylib
+*.egg-info/
+.eggs/
+build/
+dist/
+pip-wheel-metadata/
+.cache/
+.mypy_cache/
+.pytype/
+.pytest_cache/
 
-# Cachés varias
-.joblib_cache/
+# ===== Entornos y secrets =====
+.venv/
+venv/
+.env
+.env.*
+
+# ===== Jupyter / Streamlit =====
+.ipynb_checkpoints/
+.streamlit/
+
+# ===== Datos =====
+# No versionar datos crudos por defecto
+data/raw/**
+!data/raw/.gitkeep
+!data/raw/README.md
+
+# Procesados: ignora todo salvo definiciones
+data/processed/**
+!data/processed/.gitkeep
+!data/processed/feature_definitions.json
+
+# ===== Modelos =====
+models/**
+!models/.gitkeep
+
+# ===== Resultados =====
+# Figuras y tablas
+results/figures/**
+results/tables/**
+# Conserva el resumen de métricas y el keep
+!results/metrics.json
+!results/.gitkeep
+
+# ===== Logs / checkpoints opcionales =====
+logs/
+*.log
+checkpoints/
+*.ckpt
+*.pt
